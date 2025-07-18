@@ -8,6 +8,7 @@ import {
   Max,
   Min,
 } from "class-validator";
+import SuccessResponse, { ISuccessResponse } from "./SuccessResponse";
 
 export class PaginatedQueryDto {
   @Type(() => Number)
@@ -30,8 +31,13 @@ export class DateRangePaginationDto {
   endDate: string;
 }
 
-export class PaginatedResponse<T> {
-  data: T[];
+export interface IPaginatedResponse extends ISuccessResponse {
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export class PaginatedResponse extends SuccessResponse {
   meta: {
     total: number;
     page: number;
@@ -39,11 +45,16 @@ export class PaginatedResponse<T> {
     totalPages: number;
   };
 
-  constructor(data: T[], total: number, page: number, limit: number) {
-    console.debug("🚀 ~ PaginatedResponse<T> ~ constructor ~ limit:", limit);
-    console.debug("🚀 ~ PaginatedResponse<T> ~ constructor ~ page:", page);
-    console.debug("🚀 ~ PaginatedResponse<T> ~ constructor ~ total:", total);
-    this.data = data;
+  constructor({
+    data,
+    total,
+    page,
+    limit,
+    message,
+    status,
+    redirectUrl,
+  }: IPaginatedResponse) {
+    super({ data, message, status, redirectUrl });
     this.meta = {
       total: total,
       page: page,

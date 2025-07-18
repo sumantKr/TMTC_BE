@@ -4,17 +4,13 @@ import { differenceInDays } from "date-fns";
 import ErrorResponse from "../../common/ErrorResponse";
 import { StatusCodes } from "http-status-codes";
 import { PaginatedResponse } from "../../common/pagination";
+import { Types } from "mongoose";
 
 class ItineraryService {
   async create(userId: string, dto: CreateItineraryDto) {
     return await ItineraryModel.create({ ...dto, user: userId });
   }
   async findById(userId: string, itineraryId: string) {
-    console.debug(
-      "🚀 ~ ItineraryService ~ findById ~ itineraryId:",
-      itineraryId
-    );
-    console.debug("🚀 ~ ItineraryService ~ findById ~ userId:", userId);
     return await ItineraryModel.findOne({ _id: itineraryId, user: userId });
   }
 
@@ -51,7 +47,7 @@ class ItineraryService {
       ItineraryModel.countDocuments({ user: userId }),
     ]);
 
-    return new PaginatedResponse(data, total, page, limit);
+    return { data, total, page, limit };
   }
   async update(id: string, userId: string, dto: UpdateItineraryDto) {
     const itinerary = await ItineraryModel.findOneAndUpdate(
@@ -87,6 +83,90 @@ class ItineraryService {
 
     const existing = await ItineraryModel.find(query);
     return existing.length;
+  }
+
+  async totalItineraries(userId: string) {
+    return await ItineraryModel.countDocuments({ user: userId });
+  }
+
+  async getUpcomingTripsCount(userId: string) {
+    const now = new Date();
+    return await ItineraryModel.countDocuments({
+      startDate: { $gt: now },
+      user: userId,
+    });
+  }
+
+  async getTotalBudgetPerMonth(userId: string) {
+    const results = await ItineraryModel.aggregate([
+      { $match: { user: new Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$startDate" },
+            month: { $month: "$startDate" },
+          },
+          totalBudget: { $sum: "$budget" },
+        },
+      },
+      {
+        $project: {
+          month: {
+            $concat: [
+              { $toString: "$_id.year" },
+              "-",
+              {
+                $cond: [
+                  { $lt: ["$_id.month", 10] },
+                  { $concat: ["0", { $toString: "$_id.month" }] },
+                  { $toString: "$_id.month" },
+                ],
+              },
+            ],
+          },
+          totalBudget: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { month: 1 } },
+    ]);
+    return results;
+  }
+  async getTotalTripsByMonth(userId: string) {
+    const results = await ItineraryModel.aggregate([
+      { $match: { user: new Types.ObjectId(userId), deletedAt: null } },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$startDate" },
+            month: { $month: "$startDate" },
+          },
+          totalTrips: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          month: {
+            $concat: [
+              { $toString: "$_id.year" },
+              "-",
+              {
+                $cond: [
+                  { $lt: ["$_id.month", 10] },
+                  { $concat: ["0", { $toString: "$_id.month" }] },
+                  { $toString: "$_id.month" },
+                ],
+              },
+            ],
+          },
+          totalTrips: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { month: 1 } },
+    ]);
+
+    return results;
   }
 }
 

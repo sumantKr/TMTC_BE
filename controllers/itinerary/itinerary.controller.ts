@@ -16,6 +16,7 @@ import ItineraryService from "./itinerary.service";
 import {
   DateRangePaginationDto,
   PaginatedQueryDto,
+  PaginatedResponse,
 } from "../../common/pagination";
 
 export class ItineraryController implements IController {
@@ -33,6 +34,11 @@ export class ItineraryController implements IController {
       "/",
       validationMiddleware(CreateItineraryDto),
       catchAsync(this.create.bind(this))
+    );
+    this.router.get(
+      "/details/:itineraryId",
+      validationMiddleware(ItineraryParamsDto, "params"),
+      catchAsync(this.getById.bind(this))
     );
 
     this.router.get(
@@ -57,6 +63,22 @@ export class ItineraryController implements IController {
       "/:itineraryId",
       validationMiddleware(ItineraryParamsDto, "params"),
       catchAsync(this.delete.bind(this))
+    );
+    this.router.get(
+      "/stats/count/total",
+      catchAsync(this.getTotalItineraries.bind(this))
+    );
+    this.router.get(
+      "/stats/month/budget",
+      catchAsync(this.getMonthlyBudget.bind(this))
+    );
+    this.router.get(
+      "/stats/trips/upcoming",
+      catchAsync(this.getUpcomingTrips.bind(this))
+    );
+    this.router.get(
+      "/stats/trips/month",
+      catchAsync(this.getMonthlyTrips.bind(this))
     );
   }
 
@@ -124,10 +146,10 @@ export class ItineraryController implements IController {
       Number(limit)
     );
     return res.send(
-      new SuccessResponse({
+      new PaginatedResponse({
         message: "Itineraries fetched successfully",
-        data: itineraries,
         status: StatusCodes.OK,
+        ...itineraries,
       })
     );
   }
@@ -180,6 +202,31 @@ export class ItineraryController implements IController {
     );
   }
 
+  private async getById(
+    req: IUserRequest<ItineraryParamsDto, {}>,
+    res: Response
+  ) {
+    const userId = req.user!._id;
+    const itineraryId = req.params.itineraryId;
+    const foundItinerary = await this.itineraryService.findById(
+      userId,
+      itineraryId
+    );
+
+    if (!foundItinerary) {
+      throw new ErrorResponse({
+        status: StatusCodes.NOT_FOUND,
+        message: "Itinerary not found",
+      });
+    }
+    return res.send(
+      new SuccessResponse({
+        message: "Itinerary Detail",
+        data: foundItinerary,
+        status: StatusCodes.OK,
+      })
+    );
+  }
   private async delete(
     req: IUserRequest<ItineraryParamsDto, {}>,
     res: Response
@@ -202,6 +249,57 @@ export class ItineraryController implements IController {
       new SuccessResponse({
         message: "Itinerary deleted",
         data: deleted,
+        status: StatusCodes.OK,
+      })
+    );
+  }
+  async getTotalItineraries(req: IUserRequest, res: Response) {
+    const userId = req.user!._id;
+    const count = await this.itineraryService.totalItineraries(userId);
+
+    return res.send(
+      new SuccessResponse({
+        message: "Total itineraries fetched successfully",
+        data: { totalItineraries: count },
+        status: StatusCodes.OK,
+      })
+    );
+  }
+
+  async getUpcomingTrips(req: IUserRequest, res: Response) {
+    const userId = req.user!._id;
+    const count = await this.itineraryService.getUpcomingTripsCount(userId);
+
+    return res.send(
+      new SuccessResponse({
+        message: "Upcoming trips fetched successfully",
+        data: { upcomingTrips: count },
+        status: StatusCodes.OK,
+      })
+    );
+  }
+
+  async getMonthlyBudget(req: IUserRequest, res: Response) {
+    const userId = req.user!._id;
+    const result = await this.itineraryService.getTotalBudgetPerMonth(userId);
+
+    return res.send(
+      new SuccessResponse({
+        message: "Monthly budget fetched successfully",
+        data: { monthlyBudget: result },
+        status: StatusCodes.OK,
+      })
+    );
+  }
+
+  async getMonthlyTrips(req: IUserRequest, res: Response) {
+    const userId = req.user!._id;
+    const result = await this.itineraryService.getTotalTripsByMonth(userId);
+
+    return res.send(
+      new SuccessResponse({
+        message: "Monthly trips fetched successfully",
+        data: { monthlyTrips: result },
         status: StatusCodes.OK,
       })
     );

@@ -1,6 +1,6 @@
 import { StatusCodes, getReasonPhrase } from "http-status-codes";
 
-interface ISuccessResponse {
+export interface ISuccessResponse {
   status: StatusCodes;
   message: string;
   data?: any;

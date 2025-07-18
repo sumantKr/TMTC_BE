@@ -8,6 +8,7 @@ const env = cleanEnv(process.env, {
   DB_PATH: str(),
   JWT_SECRET: str(),
   NODE_ENV: str(),
+  CORS_ORIGIN: str(),
 });
 
 export const {
@@ -17,4 +18,5 @@ export const {
   PORT,
   isDevelopment,
   isProduction,
+  CORS_ORIGIN,
 } = env;

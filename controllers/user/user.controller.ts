@@ -111,7 +111,7 @@ export class UserController implements IController {
       password,
       foundUser.password
     );
-    const userToSend = foundUser.toObject(); // If it's a Mongoose doc
+    const userToSend = foundUser.toObject(); 
     delete userToSend.password;
     if (!isPasswordValid) {
       throw new ErrorResponse({
