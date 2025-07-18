@@ -28,11 +28,9 @@ class ItineraryService {
 
     const query: any = {
       user: userId,
-      $or: [{ startDate: { $gte: startDate } }, { endDate: { $lte: endDate } }],
+      $and: [{ startDate: { $gte: startDate } }, { startDate: { $lte: endDate } }],
     };
-
     const results = await ItineraryModel.find(query).sort({ startDate: 1 });
-
     return results;
   }
 
