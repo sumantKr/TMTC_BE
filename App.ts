@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import express, { Application } from "express";
 import morgan from "morgan";
-import { API_VERSION, DB_PATH, PORT } from "./constants/env_variables";
+import { API_VERSION, CORS_ORIGIN, DB_PATH, PORT } from "./constants/env_variables";
 import errorMiddleware from "./middleware/ErrorHandler.middleware";
 import cors from "cors";
 import { IController } from "./common/controller.types";
@@ -43,7 +43,7 @@ class App {
     this.app.use(cookieParser(["_ac_jwt"]));
     this.app.use(morgan("dev"));
     this.app.use(express.urlencoded({ extended: false }));
-    this.app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+    this.app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
   }
 
   private initializeControllers(controllers: IController[]) {
