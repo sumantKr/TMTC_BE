@@ -2,9 +2,6 @@ import { Transform, Type } from "class-transformer";
 import {
   IsDateString,
   IsInt,
-  IsNotEmpty,
-  IsNumber,
-  IsOptional,
   Max,
   Min,
 } from "class-validator";

@@ -3,7 +3,6 @@ import { CreateItineraryDto, UpdateItineraryDto } from "./itinerary.dto";
 import { differenceInDays } from "date-fns";
 import ErrorResponse from "../../common/ErrorResponse";
 import { StatusCodes } from "http-status-codes";
-import { PaginatedResponse } from "../../common/pagination";
 import { Types } from "mongoose";
 
 class ItineraryService {
@@ -14,7 +13,12 @@ class ItineraryService {
     return await ItineraryModel.findOne({ _id: itineraryId, user: userId });
   }
 
-  async listUserCalendar(userId: string, startDate: string, endDate: string) {
+  async listUserCalendar(
+    userId: string,
+    startDate: string,
+    endDate: string,
+    title?: string
+  ) {
     const differenceBetweenDays = differenceInDays(
       new Date(endDate),
       new Date(startDate)
@@ -26,23 +30,36 @@ class ItineraryService {
       });
     }
 
-    const query: any = {
+    const query: Record<string, any> = {
       user: userId,
-      $and: [{ startDate: { $gte: startDate } }, { startDate: { $lte: endDate } }],
+      startDate: { $gte: startDate, $lte: endDate },
     };
+    if (title) {
+      query.title = { $regex: new RegExp(title, "i") }; 
+
+    }
     const results = await ItineraryModel.find(query).sort({ startDate: 1 });
     return results;
   }
 
-  async listUserItinerary(userId: string, page: number, limit: number) {
+  async listUserItinerary(
+    userId: string,
+    page: number,
+    limit: number,
+    title?: string
+  ) {
     const skip = (page - 1) * limit;
 
+    const query: Record<string, any> = {
+      user: userId,
+    };
+    if (title) {
+      query.title = { $regex: new RegExp(title, "i") }; 
+
+    }
     const [data, total] = await Promise.all([
-      ItineraryModel.find({ user: userId })
-        .skip(skip)
-        .limit(limit)
-        .sort({ startDate: 1 }),
-      ItineraryModel.countDocuments({ user: userId }),
+      ItineraryModel.find(query).skip(skip).limit(limit).sort({ startDate: 1 }),
+      ItineraryModel.countDocuments(query),
     ]);
 
     return { data, total, page, limit };

@@ -111,7 +111,7 @@ export class UserController implements IController {
       password,
       foundUser.password
     );
-    const userToSend = foundUser.toObject(); 
+    const userToSend = foundUser.toObject();
     delete userToSend.password;
     if (!isPasswordValid) {
       throw new ErrorResponse({
@@ -126,6 +126,7 @@ export class UserController implements IController {
       secure: isProduction, // use true in production
       maxAge: JWT_EXPIRY, // 1 day
       sameSite: isProduction ? "none" : "lax",
+      path: "/",
     });
     return response.send(
       new SuccessResponse({
@@ -135,6 +136,7 @@ export class UserController implements IController {
       })
     );
   }
+  
 
   private async logoutUser(request: Request, response: Response) {
     response.cookie(COOKIE_NAME, "", {

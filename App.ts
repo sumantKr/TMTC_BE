@@ -2,7 +2,7 @@ import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 import express, { Application } from "express";
 import morgan from "morgan";
-import { API_VERSION, CORS_ORIGIN, DB_PATH, PORT } from "./constants/env_variables";
+import { ALLOWED_ORIGINS, API_VERSION, CORS_ORIGIN, DB_PATH, PORT } from "./constants/env_variables";
 import errorMiddleware from "./middleware/ErrorHandler.middleware";
 import cors from "cors";
 import { IController } from "./common/controller.types";
@@ -39,16 +39,15 @@ class App {
   }
 
   private initializeMiddleWares() {
+    this.app.use(cors({ origin: ALLOWED_ORIGINS, credentials: true }));
     this.app.use(bodyParser.json());
     this.app.use(cookieParser(["_ac_jwt"]));
     this.app.use(morgan("dev"));
     this.app.use(express.urlencoded({ extended: false }));
-    this.app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
   }
 
   private initializeControllers(controllers: IController[]) {
     controllers.forEach((controller: IController) => {
-      console.debug(`${API_VERSION}/${controller.path}`);
       this.app.use(`${API_VERSION}/${controller.path}`, controller.router);
     });
   }

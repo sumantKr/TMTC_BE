@@ -9,13 +9,13 @@ import catchAsync from "../../middleware/catchAsync";
 import validationMiddleware from "../../middleware/validation.middleware";
 import {
   CreateItineraryDto,
+  ItineraryCalendarDto,
+  ItineraryListDto,
   ItineraryParamsDto,
   UpdateItineraryDto,
 } from "./itinerary.dto";
 import ItineraryService from "./itinerary.service";
 import {
-  DateRangePaginationDto,
-  PaginatedQueryDto,
   PaginatedResponse,
 } from "../../common/pagination";
 
@@ -43,12 +43,12 @@ export class ItineraryController implements IController {
 
     this.router.get(
       "/calendar",
-      validationMiddleware(DateRangePaginationDto, "query"),
+      validationMiddleware(ItineraryCalendarDto, "query"),
       catchAsync(this.calendarView.bind(this))
     );
     this.router.get(
       "/list",
-      validationMiddleware(PaginatedQueryDto, "query"),
+      validationMiddleware(ItineraryListDto, "query"),
       catchAsync(this.list.bind(this))
     );
 
@@ -88,9 +88,16 @@ export class ItineraryController implements IController {
   ) {
     const { endDate, startDate } = req.body;
     const userId = req.user!._id;
-    if (startDate > endDate) {
+    if (!startDate || !endDate) {
       throw new ErrorResponse({
-        message: "Start date must be less than end date!",
+        message: "Both start date and end date are required.",
+        status: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    if (new Date(startDate).getTime() >= new Date(endDate).getTime()) {
+      throw new ErrorResponse({
+        message: "Start date must be before end date.",
         status: StatusCodes.BAD_REQUEST,
       });
     }
@@ -116,15 +123,16 @@ export class ItineraryController implements IController {
   }
 
   private async calendarView(
-    request: IUserRequest<{}, {}, {}, DateRangePaginationDto>,
+    request: IUserRequest<{}, {}, {}, ItineraryCalendarDto>,
     res: Response
   ) {
     const userId = request.user!._id;
-    const { endDate, startDate } = request.query;
+    const { endDate, startDate, title } = request.query;
     const itineraries = await this.itineraryService.listUserCalendar(
       userId,
       startDate,
-      endDate
+      endDate,
+      title
     );
     return res.send(
       new SuccessResponse({
@@ -135,15 +143,16 @@ export class ItineraryController implements IController {
     );
   }
   private async list(
-    request: IUserRequest<{}, {}, {}, PaginatedQueryDto>,
+    request: IUserRequest<{}, {}, {}, ItineraryListDto>,
     res: Response
   ) {
     const userId = request.user!._id;
-    const { limit, page } = request.query;
+    const { limit, page, title } = request.query;
     const itineraries = await this.itineraryService.listUserItinerary(
       userId,
       Number(page),
-      Number(limit)
+      Number(limit),
+      title
     );
     return res.send(
       new PaginatedResponse({
@@ -161,9 +170,16 @@ export class ItineraryController implements IController {
     const { startDate, endDate } = req.body;
     const userId = req.user!._id;
     const itineraryId = req.params.itineraryId;
-    if (startDate > endDate) {
+    if (!startDate || !endDate) {
       throw new ErrorResponse({
-        message: "Start date must be less than end date!",
+        message: "Both start date and end date are required.",
+        status: StatusCodes.BAD_REQUEST,
+      });
+    }
+
+    if (new Date(startDate).getTime() >= new Date(endDate).getTime()) {
+      throw new ErrorResponse({
+        message: "Start date must be before end date.",
         status: StatusCodes.BAD_REQUEST,
       });
     }

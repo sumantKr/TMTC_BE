@@ -7,7 +7,6 @@ function errorMiddleware(
   response: Response,
   next: NextFunction
 ) {
-  console.debug('🚀 ~ error:', error)
   return response.status(error.status).send({
     ...error,
     message:error.message

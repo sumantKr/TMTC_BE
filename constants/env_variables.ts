@@ -20,3 +20,4 @@ export const {
   isProduction,
   CORS_ORIGIN,
 } = env;
+export const ALLOWED_ORIGINS = CORS_ORIGIN?.split(",") ?? [];

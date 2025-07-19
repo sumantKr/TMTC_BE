@@ -1,6 +1,7 @@
 import mongoose, { Document } from "mongoose";
 import { createTimestampedParanoidSchema, ITimestampParanoidDocument } from "../../model/model.config";
 import { IUser } from "./user.types";
+import { paranoidPlugin } from "../../model/plugins";
 
 export type IUserDocument = IUser & ITimestampParanoidDocument;
 
@@ -11,5 +12,6 @@ const userSchema = createTimestampedParanoidSchema<IUser>({
   fullName: { type: String, required: true },
 });
 
-// 4. Export the model
+userSchema.plugin(paranoidPlugin);
+
 export const UserModel = mongoose.model<IUserDocument>("User", userSchema);
