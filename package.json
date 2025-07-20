@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon server.ts",
+    "dev": "nodemon --legacy-watch server.ts",
     "build": "tsc",
     "start": "node dist/server.js"
   },
@@ -38,7 +37,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
-    "@types/cors": "^2.8.13",
+    "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/uuid": "^9.0.1",
     "mongodb-memory-server": "^10.1.4"

@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: node-app-dev
+    ports:
+      - "${PORT:-5500}:${PORT:-5500}"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+       - NODE_ENV=${NODE_ENV}
+       - DB_PATH=${DB_PATH}
+       - JWT_SECRET=${JWT_SECRET}
+       - CORS_ORIGIN=${CORS_ORIGIN}
+       - PORT=${PORT}
+       - API_VERSION=${API_VERSION}
+    depends_on:
+      - mongo
+    command: npm run dev
+    env_file:
+      - .env
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

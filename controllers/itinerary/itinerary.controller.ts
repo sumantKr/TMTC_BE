@@ -15,9 +15,7 @@ import {
   UpdateItineraryDto,
 } from "./itinerary.dto";
 import ItineraryService from "./itinerary.service";
-import {
-  PaginatedResponse,
-} from "../../common/pagination";
+import { PaginatedResponse } from "../../common/pagination";
 
 export class ItineraryController implements IController {
   path = "itinerary";
@@ -88,12 +86,6 @@ export class ItineraryController implements IController {
   ) {
     const { endDate, startDate } = req.body;
     const userId = req.user!._id;
-    if (!startDate || !endDate) {
-      throw new ErrorResponse({
-        message: "Both start date and end date are required.",
-        status: StatusCodes.BAD_REQUEST,
-      });
-    }
 
     if (new Date(startDate).getTime() >= new Date(endDate).getTime()) {
       throw new ErrorResponse({
@@ -170,12 +162,6 @@ export class ItineraryController implements IController {
     const { startDate, endDate } = req.body;
     const userId = req.user!._id;
     const itineraryId = req.params.itineraryId;
-    if (!startDate || !endDate) {
-      throw new ErrorResponse({
-        message: "Both start date and end date are required.",
-        status: StatusCodes.BAD_REQUEST,
-      });
-    }
 
     if (new Date(startDate).getTime() >= new Date(endDate).getTime()) {
       throw new ErrorResponse({

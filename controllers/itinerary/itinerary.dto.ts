@@ -46,27 +46,22 @@ export class ItineraryCalendarDto extends DateRangePaginationDto {
 
 export class UpdateItineraryDto {
 
-  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  title?: string;
+  title: string;
 
-  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  destination?: string;
+  destination: string;
 
-  @IsOptional()
   @IsNumber()
   @Min(1)
-  budget?: number;
-  @IsOptional()
+  budget: number;
   @IsDateString()
-  startDate?: string;
+  startDate: string;
 
-  @IsOptional()
   @IsDateString()
-  endDate?: string;
+  endDate: string;
 }
 export class ItineraryParamsDto {
   @IsMongoId()
