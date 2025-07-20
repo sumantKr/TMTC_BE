@@ -43,6 +43,8 @@ CORS_ORIGIN,
 # Development (with nodemon)
 npm run dev
 
+# with docker
+run docker compose up - the codebase is bind mounted and supports hmr
 # Production
 npm run build
 npm start
